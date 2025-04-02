@@ -1,0 +1,289 @@
+TAP version 14
+[32mMongoDB successfully connected to mongodb://127.0.0.1:41909,127.0.0.1:46667,127.0.0.1:37409/?replicaSet=testset[39m
+# Subtest: bulk insert objects
+    ok 1 - should be equal
+    ok 2 - type is Date
+    ok 3 - should be equal
+    1..3
+ok 1 - bulk insert objects # time=623.509ms
+
+# Subtest: bulk update objects
+    not ok 1 - unhandled error
+      ---
+      stack: >
+        OrderedBulkOperation.handleWriteError
+        (node_modules/mongoose/node_modules/mongodb/src/bulk/common.ts:1274:9)
+      
+        resultHandler
+        (node_modules/mongoose/node_modules/mongodb/src/bulk/common.ts:586:23)
+      
+        <anonymous> (node_modules/mongoose/node_modules/mongodb/src/utils.ts:379:15)
+      at:
+        fileName: node_modules/mongoose/node_modules/mongodb/src/bulk/common.ts
+        lineNumber: 1274
+        columnNumber: 9
+        typeName: OrderedBulkOperation
+        methodName: handleWriteError
+        functionName: OrderedBulkOperation.handleWriteError
+      type: MongoBulkWriteError
+      code: 11000
+      writeErrors:
+        - code: 11000
+          index: 1
+          errmsg: 'E11000 duplicate key error collection: test.versions index: _id_ dup
+            key: { _id: "[object Object]" }'
+          op:
+            _id: "[object Object]"
+            data: second mock test
+            number: 2
+            _version: 1
+            _validity:
+              start: !!timestamp 2025-04-02T12:58:38.925Z
+              end: !!timestamp 2025-04-02T12:58:39.562Z
+            _editor: default
+      result:
+        insertedCount: 1
+        matchedCount: 0
+        modifiedCount: 0
+        deletedCount: 0
+        upsertedCount: 0
+        upsertedIds: {}
+        insertedIds:
+          "0": "[object Object]"
+      tapCaught: returnedPromiseRejection
+      source: |2
+      
+              callback(
+                new MongoBulkWriteError(
+        --------^
+                  {
+                    message: msg,
+      ...
+    
+    1..1
+not ok 2 - bulk update objects # time=118.798ms
+  ---
+  at:
+    fileName: test/versioning.bulk.test.js
+    lineNumber: 111
+    columnNumber: 5
+    typeName: Object
+  source: >
+  
+    // test versioning CRUD
+  
+    tap.test('bulk update objects', async (childTest) => {
+  
+    ----^
+      let updates = [await Mock.findById(mockOne._id), await Mock.findById(mockTwo._id), await Mock.findById(mockThree._id)]
+      let originals = updates.map(doc => { return fromJS(doc.toObject()).toJS() })
+  ...
+
+# Subtest: bulk update objects with different lengths fail
+    ok 1 - should be equal
+    not ok 2 - should be equal
+      ---
+      compare: ===
+      at:
+        fileName: test/versioning.bulk.test.js
+        lineNumber: 177
+        columnNumber: 13
+        typeName: Test
+      stack: |
+        Test.<anonymous> (test/versioning.bulk.test.js:177:13)
+      source: |2
+      
+          let mock = await Mock.findById(mockOne._id)
+          childTest.equal(mock[constants.VERSION], 2)
+        ------------^
+      
+          childTest.end()
+      diff: |
+        --- expected
+        +++ actual
+        @@ -1,1 +1,1 @@
+        -2
+        +1
+      ...
+    
+    1..2
+not ok 3 - bulk update objects with different lengths fail # time=126.349ms
+  ---
+  at:
+    fileName: test/versioning.bulk.test.js
+    lineNumber: 146
+    columnNumber: 5
+    typeName: Object
+  source: >
+  
+    // test versioning CRUD
+  
+    tap.test('bulk update objects with different lengths fail', async (childTest)
+    => {
+  
+    ----^
+      let updates = [await Mock.findById(mockOne._id), await Mock.findById(mockTwo._id)]
+      let originals = updates.map(doc => { return fromJS(doc.toObject()).toJS() })
+  ...
+
+# Subtest: bulk delete objects
+    not ok 1 - unhandled error
+      ---
+      stack: >
+        OrderedBulkOperation.handleWriteError
+        (node_modules/mongoose/node_modules/mongodb/src/bulk/common.ts:1274:9)
+      
+        resultHandler
+        (node_modules/mongoose/node_modules/mongodb/src/bulk/common.ts:586:23)
+      
+        <anonymous> (node_modules/mongoose/node_modules/mongodb/src/utils.ts:379:15)
+      at:
+        fileName: node_modules/mongoose/node_modules/mongodb/src/bulk/common.ts
+        lineNumber: 1274
+        columnNumber: 9
+        typeName: OrderedBulkOperation
+        methodName: handleWriteError
+        functionName: OrderedBulkOperation.handleWriteError
+      type: MongoBulkWriteError
+      code: 11000
+      writeErrors:
+        - code: 11000
+          index: 1
+          errmsg: 'E11000 duplicate key error collection: test.versions index: _id_ dup
+            key: { _id: "[object Object]" }'
+          op:
+            _id: "[object Object]"
+            data: second mock test
+            number: 2
+            _version: 1
+            _validity:
+              start: !!timestamp 2025-04-02T12:58:38.925Z
+              end: !!timestamp 2025-04-02T12:58:39.811Z
+            _deleter: default
+      result:
+        insertedCount: 1
+        matchedCount: 0
+        modifiedCount: 0
+        deletedCount: 0
+        upsertedCount: 0
+        upsertedIds: {}
+        insertedIds:
+          "0": "[object Object]"
+      tapCaught: returnedPromiseRejection
+      source: |2
+      
+              callback(
+                new MongoBulkWriteError(
+        --------^
+                  {
+                    message: msg,
+      ...
+    
+    1..1
+not ok 4 - bulk delete objects # time=44.722ms
+  ---
+  at:
+    fileName: test/versioning.bulk.test.js
+    lineNumber: 183
+    columnNumber: 5
+    typeName: Object
+  source: >
+  
+    // test versioning CRUD
+  
+    tap.test('bulk delete objects', async (childTest) => {
+  
+    ----^
+      let documents = [await Mock.findById(mockOne._id), await Mock.findById(mockTwo._id), await Mock.findById(mockThree._id)]
+  ...
+
+# Subtest: bulk delete already deleted objects
+    not ok 1 - Cannot read properties of null (reading '_id')
+      ---
+      stack: |
+        Test.<anonymous> (test/versioning.bulk.test.js:215:29)
+      at:
+        fileName: test/versioning.bulk.test.js
+        lineNumber: 215
+        columnNumber: 29
+        typeName: Test
+        methodName: <anonymous>
+        functionName: Test.<anonymous>
+      type: TypeError
+      tapCaught: returnedPromiseRejection
+      source: |2
+      
+          for (let document of documents) {
+            document._id = document._id._id
+        ----------------------------^
+          }
+      ...
+    
+    1..1
+not ok 5 - bulk delete already deleted objects # time=25.404ms
+  ---
+  at:
+    fileName: test/versioning.bulk.test.js
+    lineNumber: 209
+    columnNumber: 5
+    typeName: Object
+  source: |
+  
+    // test versioning CRUD
+    tap.test('bulk delete already deleted objects', async (childTest) => {
+    ----^
+      let documents = [await Mock.findVersion(mockOne._id, 2, Mock),
+      await Mock.findVersion(mockTwo._id, 2, Mock),
+  ...
+
+# Subtest: bulk update already deleted objects
+    not ok 1 - Cannot read properties of null (reading '_id')
+      ---
+      stack: |
+        Test.<anonymous> (test/versioning.bulk.test.js:235:29)
+      at:
+        fileName: test/versioning.bulk.test.js
+        lineNumber: 235
+        columnNumber: 29
+        typeName: Test
+        methodName: <anonymous>
+        functionName: Test.<anonymous>
+      type: TypeError
+      tapCaught: returnedPromiseRejection
+      source: |2
+      
+          for (let document of updates) {
+            document._id = document._id._id
+        ----------------------------^
+          }
+      ...
+    
+    1..1
+not ok 6 - bulk update already deleted objects # time=16.567ms
+  ---
+  at:
+    fileName: test/versioning.bulk.test.js
+    lineNumber: 229
+    columnNumber: 5
+    typeName: Object
+  source: |
+  
+    // test versioning CRUD
+    tap.test('bulk update already deleted objects', async (childTest) => {
+    ----^
+      let updates = [await Mock.findVersion(mockOne._id, 2, Mock),
+      await Mock.findVersion(mockTwo._id, 2, Mock),
+  ...
+
+# Subtest: bulk update wrong version documents
+    ok 1 - should be equivalent
+    1..1
+ok 7 - bulk update wrong version documents # time=14.444ms
+
+# Subtest: bulk update partially fails rollsback
+    ok 1 - should be equivalent
+    1..1
+ok 8 - bulk update partially fails rollsback # time=19.842ms
+
+1..8
+[31mMongoDB disconnected[39m

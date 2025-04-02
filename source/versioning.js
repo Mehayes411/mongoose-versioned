@@ -1,9 +1,9 @@
-const util = require("./util")
-const constants = require("./constants")
+const util = require('./util')
+const constants = require('./constants')
 const ObjectId = require('mongoose').Types.ObjectId
 const { fromJS } = require('immutable')
-const commons = require("./commons")
-"use strict"
+const commons = require('./commons')
+'use strict'
 
 module.exports = function (schema, options) {
 
@@ -24,7 +24,7 @@ module.exports = function (schema, options) {
 
     // Make sure there's no reserved paths
     constants.RESERVED_FIELDS.map(
-        key =>  { if (schema.path(key)) throw Error(`Schema can't have a path called "${key}"`) }
+        key => { if (schema.path(key)) throw Error(`Schema can't have a path called '${key}'`) }
     )
 
     // create the versioned schema
@@ -43,7 +43,7 @@ module.exports = function (schema, options) {
     let versionedValidityField = {}
     versionedValidityField[constants.VALIDITY] = {
         start: { type: Date, required: true },
-        end: { type: Date, required: true}
+        end: { type: Date, required: true }
     }
 
     let versionField = {}
@@ -54,10 +54,10 @@ module.exports = function (schema, options) {
     versionedIdField[constants.VERSION] = versionField[constants.VERSION]
 
     let editorField = {}
-    editorField[constants.EDITOR] = { type: String, required: false}
+    editorField[constants.EDITOR] = { type: String, required: false }
 
     let deleterField = {}
-    deleterField[constants.DELETER] = { type: String, required: false}
+    deleterField[constants.DELETER] = { type: String, required: false }
 
     // Add Custom fields
     schema.add(validityField)
@@ -72,19 +72,19 @@ module.exports = function (schema, options) {
     versionedSchema.add(deleterField)
 
     // add index to versioning (id, validity),
-    const validity_end = constants.VALIDITY + ".end"
-    const validity_start = constants.VALIDITY + ".start"
+    const validity_end = constants.VALIDITY + '.end'
+    const validity_start = constants.VALIDITY + '.start'
 
     let versionedValidityIndex = {}
     versionedValidityIndex[constants.ID + '.' + constants.ID] = 1
     versionedValidityIndex[validity_start] = 1
     versionedValidityIndex[validity_end] = 1
-    const indexName = { name: "_id_validity_start_validity_end"};
+    const indexName = { name: '_id_validity_start_validity_end' };
     versionedSchema.index(versionedValidityIndex, indexName)
 
     // Turn off internal versioning, we don't need this since we version on everything
-    schema.set("versionKey", false)
-    versionedSchema.set("versionKey", false)
+    schema.set('versionKey', false)
+    versionedSchema.set('versionKey', false)
 
     // Add reference to model to original schema
     schema.statics.VersionedModel = connection.model(options.collection, versionedSchema)
@@ -97,10 +97,10 @@ module.exports = function (schema, options) {
     schema.statics.findValidVersion = async (id, date, model) => {
 
         // 1. check if in current collection is valid
-        const validity_end = constants.VALIDITY + ".end"
-        const validity_start = constants.VALIDITY + ".start"
+        const validity_end = constants.VALIDITY + '.end'
+        const validity_start = constants.VALIDITY + '.start'
 
-        let query = { "_id": ObjectId(id)}
+        let query = { '_id': new ObjectId(id) }
         query[validity_start] = { $lte: date }
 
         let current = await model.findOne(query)
@@ -110,7 +110,7 @@ module.exports = function (schema, options) {
         // 2. if not, check versioned collection
         let versionedModel = schema.statics.VersionedModel
         query = {}
-        query[constants.ID + "." + constants.ID] = ObjectId(id)
+        query[constants.ID + '.' + constants.ID] = new ObjectId(id)
         query[validity_start] = { $lte: date }
         query[validity_end] = { $gt: date }
 
@@ -123,7 +123,7 @@ module.exports = function (schema, options) {
 
         // 1. check if version is the main collection
         let query = {}
-        query[constants.ID] = ObjectId(id)
+        query[constants.ID] = new ObjectId(id)
         query[constants.VERSION] = version
 
         let current = await model.findOne(query)
@@ -135,7 +135,7 @@ module.exports = function (schema, options) {
         let versionedModel = schema.statics.VersionedModel
         query = {}
         let versionedId = {}
-        versionedId[constants.ID] = ObjectId(id)
+        versionedId[constants.ID] = new ObjectId(id)
         versionedId[constants.VERSION] = version
         query[constants.ID] = versionedId
 
@@ -146,10 +146,10 @@ module.exports = function (schema, options) {
     // Add special bulk save that supports versioning, note that the
     // documents are the updated documents and the originals a clone (simple JS object) of what is 
     // already in the DB
-    schema.statics.bulkSaveVersioned = async (documents, originals, model, options={}) => {
+    schema.statics.bulkSaveVersioned = async (documents, originals, model, options = {}) => {
 
         // check inputs have the proper length
-        if(documents.length != originals.length && originals.length>0) {
+        if (documents.length != originals.length && originals.length > 0) {
             let err = new Error('documents and originals lengths do not match')
             throw (err)
         }
@@ -159,18 +159,18 @@ module.exports = function (schema, options) {
         for (let i = 0; i < documents.length; i += 1) {
 
             // Set fields for update
-            documents[i][constants.VALIDITY] = { "start": now }
+            documents[i][constants.VALIDITY] = { 'start': now }
 
-            if (originals.length>0) {
+            if (originals.length > 0) {
                 // create the versioned 
                 originals[i] = new schema.statics.VersionedModel(originals[i])
 
                 // remove editor info
-                originals[i][constants.EDITOR] = documents[i][constants.EDITOR]|| constants.DEFAULT_EDITOR
+                originals[i][constants.EDITOR] = documents[i][constants.EDITOR] || constants.DEFAULT_EDITOR
                 delete documents[i][constants.EDITOR]
 
                 // set fields for original
-                originals[i][constants.VALIDITY]["end"] = now
+                originals[i][constants.VALIDITY]['end'] = now
 
                 let versionedId = {}
                 versionedId[constants.ID] = originals[i][constants.ID]
@@ -178,10 +178,10 @@ module.exports = function (schema, options) {
                 originals[i][constants.ID] = versionedId
 
                 // check and increase version number
-                if (documents[i][constants.VERSION] == originals[i][constants.VERSION]){
+                if (documents[i][constants.VERSION] == originals[i][constants.VERSION]) {
                     documents[i][constants.VERSION] = documents[i][constants.VERSION] + 1
                 } else {
-                    let err = new Error('document and original versions do not match for _id: ' +  documents[i]._id)
+                    let err = new Error('document and original versions do not match for _id: ' + documents[i]._id)
                     throw (err)
                 }
             } else {
@@ -191,20 +191,20 @@ module.exports = function (schema, options) {
 
         let resUpdated = undefined
         let resVersioned = undefined
-        
-        if (originals.length>0) {
+
+        if (originals.length > 0) {
             //call buildBulkWriteOperations for the modified documents to avoid middleware hooks
-            let ops = model.buildBulkWriteOperations(documents, { skipValidation: true});
+            let ops = model.buildBulkWriteOperations(documents, { skipValidation: true });
             resUpdated = await model.bulkWrite(ops, options)
 
             // call mongoos bulkSave since the versioned collection has no middleware hooks
             let versionedModel = schema.statics.VersionedModel
             resVersioned = await versionedModel.bulkSave(originals, options)
-            
+
             // raise an error if not all the documents were modified
             if (resUpdated.nModified < documents.length) {
                 let err = new Error('bulk update failed, only ' + resUpdated.nModified + ' out of ' + documents.length + ' were updated')
-                throw (err)               
+                throw (err)
             }
 
         } else {
@@ -215,31 +215,31 @@ module.exports = function (schema, options) {
     }
 
     // Add special find by id and version number that includes versioning
-    schema.statics.bulkDeleteVersioned = async (documents, model, options={}) => {
+    schema.statics.bulkDeleteVersioned = async (documents, model, options = {}) => {
 
         const now = new Date()
         let versionedModel = schema.statics.VersionedModel
 
-        // loop over the inputs to create a bulk deletr set
+        // loop over the inputs to create a bulk delete set
         let ops = []
         for (let i = 0; i < documents.length; i += 1) {
             documents[i] = new versionedModel(fromJS(documents[i].toObject()).toJS())
 
             // Set fields for versioned
-            documents[i][constants.VALIDITY]["end"] = now
-            documents[i][constants.DELETER] = documents[i][constants.DELETER]|| constants.DEFAULT_DELETER
+            documents[i][constants.VALIDITY]['end'] = now
+            documents[i][constants.DELETER] = documents[i][constants.DELETER] || constants.DEFAULT_DELETER
 
             let versionedId = {}
             versionedId[constants.ID] = documents[i][constants.ID]
             versionedId[constants.VERSION] = documents[i][constants.VERSION]
             documents[i][constants.ID] = versionedId
 
-            let op =   {
-                "deleteOne": {
-                  "filter": { "_id": documents[i]._id }
+            let op = {
+                'deleteOne': {
+                    'filter': { '_id': documents[i]._id }
                 }
-              }
-            
+            }
+
             ops.push(op)
         }
 
@@ -252,12 +252,12 @@ module.exports = function (schema, options) {
         // raise an error if not all the documents were modified
         if (resDeleted.nRemoved < documents.length) {
             let err = new Error('bulk delete failed, only ' + resDeleted.nRemoved + ' out of ' + documents.length + ' were removed')
-            throw (err)               
+            throw (err)
         }
 
         // save latest version in the versioned collection
         resVersioned = await versionedModel.bulkSave(documents, options)
-      
+
         return resDeleted
     }
 
@@ -274,11 +274,12 @@ module.exports = function (schema, options) {
         let base = await this.collection
             .findOne({ [constants.ID]: this[constants.ID] })
             .then((foundBase) => {
-            if (foundBase === null) {
-                let err = new Error('document to update not found in collection')
-                throw (err)
-            }
-            return foundBase})
+                if (foundBase === null) {
+                    let err = new Error('document to update not found in collection')
+                    throw (err)
+                }
+                return foundBase
+            })
 
         let bV = base[constants.VERSION]
         if (baseVersion !== bV) {
@@ -287,7 +288,7 @@ module.exports = function (schema, options) {
         }
 
         // get the transaction session
-        const session = {session: this._session}
+        const session = { session: this._session }
         delete this._session
 
         // clone base document to create an archived version
@@ -298,18 +299,18 @@ module.exports = function (schema, options) {
 
         // Set validity to end now for versioned and to start now for current
         const now = new Date()
-        const start = base[constants.VALIDITY]["start"]
+        const start = base[constants.VALIDITY]['start']
 
         clone[constants.VALIDITY] = {
-            "start": start,
-            "end": now
+            'start': start,
+            'end': now
         }
 
-        this[constants.VALIDITY] = { "start": now }
+        this[constants.VALIDITY] = { 'start': now }
 
         // Special case for the findAndDelete to include deleter information
         if (this[constants.DELETER]) {
-            clone[constants.DELETER] = this[constants.DELETER] 
+            clone[constants.DELETER] = this[constants.DELETER]
         }
         // store edition info
         else {
@@ -331,7 +332,7 @@ module.exports = function (schema, options) {
     schema.pre('remove', async function (next) {
 
         // get the transaction session
-        const session = {session: this._session}
+        const session = { session: this._session }
         delete this._session
 
         // save current version clone in shadow collection
@@ -341,13 +342,13 @@ module.exports = function (schema, options) {
         clone[constants.ID] = { [constants.ID]: this[constants.ID], [constants.VERSION]: this[constants.VERSION] }
 
         const now = new Date()
-        const start = this[constants.VALIDITY]["start"]
+        const start = this[constants.VALIDITY]['start']
         clone[constants.VALIDITY] = {
-            "start": start,
-            "end": now
+            'start': start,
+            'end': now
         }
 
-        clone[constants.DELETER] = this[constants.DELETER]|| constants.DEFAULT_DELETER
+        clone[constants.DELETER] = this[constants.DELETER] || constants.DEFAULT_DELETER
 
         await new schema.statics.VersionedModel(clone).save(session)
 
@@ -398,7 +399,7 @@ module.exports = function (schema, options) {
 
     //findOneAndRemove (query level)
     schema.pre('findOneAndDelete', async function (next) {
-    await commons.filterAndModifyOne(this, next)
+        await commons.filterAndModifyOne(this, next)
     })
 
     //deleteMany (query level)

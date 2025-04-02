@@ -1,0 +1,42 @@
+TAP version 14
+# Subtest: schema cannot have field _editor
+    ok 1 - Got expected error
+    1..1
+ok 1 - schema cannot have field _editor # time=10.06ms
+
+# Subtest: schema cannot have field _deleter
+    ok 1 - Got expected error
+    1..1
+ok 2 - schema cannot have field _deleter # time=0.644ms
+
+# Subtest: schema cannot have field _version
+    ok 1 - Got expected error
+    1..1
+ok 3 - schema cannot have field _version # time=1.111ms
+
+# Subtest: schema cannot have field _validity
+    ok 1 - Got expected error
+    1..1
+ok 4 - schema cannot have field _validity # time=0.584ms
+
+# Subtest: schema cannot have field _session
+    ok 1 - Got expected error
+    1..1
+ok 5 - schema cannot have field _session # time=0.567ms
+
+# Subtest: default shadow collection is versions
+    ok 1 - should be equal
+    1..1
+ok 6 - default shadow collection is versions # time=17.478ms
+
+# Subtest: shadow collection is set to provided string
+    ok 1 - should be equal
+    1..1
+ok 7 - shadow collection is set to provided string # time=3.508ms
+
+# Subtest: shadow collection is set to provided object property
+    ok 1 - should be equal
+    1..1
+ok 8 - shadow collection is set to provided object property # time=3.325ms
+
+1..8

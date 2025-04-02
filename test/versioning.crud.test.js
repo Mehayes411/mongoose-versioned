@@ -8,7 +8,7 @@ const mongoose = require('mongoose')
 let Schema = mongoose.Schema
 
 // start in memory server
-const { MongoMemoryServer } = require( 'mongodb-memory-server' )
+const { MongoMemoryServer } = require('mongodb-memory-server')
 
 // global variable to store the server
 let mongoServer
@@ -40,7 +40,7 @@ let Mock
 let initialMock
 
 // test initialization
-tap.before(async function() {
+tap.before(async function () {
 
   mongoServer = await MongoMemoryServer.create()
 
@@ -54,15 +54,15 @@ tap.before(async function() {
 
   await mongoose.connect(mongoUri, mongooseOpts)
 
-  console.log(chalk.bold.green(`MongoDB successfully connected to ${mongoUri}`))
+  console.log(chalk.green(`MongoDB successfully connected to ${mongoUri}`))
 
   // test schema definition
   const NAME = "test"
   let testSchema = new Schema({
-    data : { type: String, required: false, unique: false },
+    data: { type: String, required: false, unique: false },
   }, { autoIndex: false })
 
-  testSchema.plugin(versioning, { options: NAME + "s.versioning", ensureIndex: true})
+  testSchema.plugin(versioning, { options: NAME + "s.versioning", ensureIndex: true })
 
   Mock = mongoose.model(NAME, testSchema)
 
@@ -123,7 +123,7 @@ tap.test('trying to update old version fails', async (childTest) => {
 tap.test('delete object moves it to archive', async (childTest) => {
   const mock = await Mock.findById(mockOne[constants.ID])
   mock._deleter = "test"
-  await mock.remove()
+  await mock.deleteOne()
 
   const noMock = await Mock.findValidVersion(mockOne[constants.ID], new Date(), Mock)
   childTest.equal(noMock, null)
@@ -137,7 +137,7 @@ tap.test('delete object moves it to archive', async (childTest) => {
 tap.test('delete object has default deleter if not provided', async (childTest) => {
   const mock = await new Mock(mockTwo).save()
 
-  await mock.remove()
+  await mock.deleteOne()
 
   const archivedMock = await Mock.VersionedModel.findById({ _id: mockTwo[constants.ID], _version: 1 })
   childTest.equal(archivedMock[constants.DELETER], constants.DEFAULT_DELETER)
@@ -160,12 +160,12 @@ tap.test('check default index is present in the shadow collection', async (child
   const indexes = await Mock.VersionedModel.collection.getIndexes()
 
   const shadowIndex = [
-     [ '_id._id', 1 ],
-     [ '_validity.start', 1 ],
-     [ '_validity.end', 1 ]
-   ]
+    ['_id._id', 1],
+    ['_validity.start', 1],
+    ['_validity.end', 1]
+  ]
 
-  if (findIndex(shadowIndex, indexes) ) {
+  if (findIndex(shadowIndex, indexes)) {
     childTest.ok('Found expected shadow index')
   } else {
     childTest.fail('Shadow index not found')
@@ -178,22 +178,22 @@ tap.test('insert many objects', async (childTest) => {
   const mocks = await Mock.insertMany([mockThree, mockFour])
 
   childTest.equal(mocks.length, 2)
-  mocks.forEach(m => { childTest.equal(m[constants.VERSION], 1)})
+  mocks.forEach(m => { childTest.equal(m[constants.VERSION], 1) })
 
   childTest.end()
 })
 
-tap.teardown(async function() {
+tap.teardown(async function () {
   await mongoose.disconnect()
   await mongoServer.stop()
-  console.log(chalk.bold.red('MongoDB disconnected'))
+  console.log(chalk.red('MongoDB disconnected'))
 })
 
 // Utility function
 function findIndex(refIndex, indexes) {
   let indexFound = false
   for (const [name, index] of Object.entries(indexes)) {
-    if(index.length == refIndex.length){
+    if (index.length == refIndex.length) {
       for (let i = 0; i < index.length; i++) {
         if (index[i].length === refIndex[i].length) {
           if ((index[i][0] == refIndex[i][0]) && (index[i][1] == refIndex[i][1])) {

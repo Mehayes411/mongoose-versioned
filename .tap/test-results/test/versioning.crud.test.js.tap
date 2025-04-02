@@ -1,0 +1,139 @@
+TAP version 14
+[32mMongoDB successfully connected to mongodb://127.0.0.1:32775/[39m
+# Subtest: create new object
+    ok 1 - should be equal
+    1..1
+ok 1 - create new object # time=104.169ms
+
+# Subtest: update object
+    ok 1 - should be equal
+    1..1
+ok 2 - update object # time=41.734ms
+
+# Subtest: find current version by number
+    ok 1 - should be equal
+    1..1
+ok 3 - find current version by number # time=2.5ms
+
+# Subtest: find old version by number
+    ok 1 - type is Date
+    1..1
+ok 4 - find old version by number # time=4.335ms
+
+# Subtest: find current valid version
+    ok 1 - should be equal
+    1..1
+ok 5 - find current valid version # time=1.789ms
+
+# Subtest: find old valid version
+    ok 1 - should be equal
+    1..1
+ok 6 - find old valid version # time=6.27ms
+
+# Subtest: trying to update old version fails
+    ok 1 - Got expected error
+    1..1
+ok 7 - trying to update old version fails # time=7.045ms
+
+# Subtest: delete object moves it to archive
+    ok 1 - should be equal
+    not ok 2 - Cannot read properties of null (reading '_deleter')
+      ---
+      stack: |
+        Test.<anonymous> (test/versioning.crud.test.js:132:31)
+      at:
+        fileName: test/versioning.crud.test.js
+        lineNumber: 132
+        columnNumber: 31
+        typeName: Test
+        methodName: <anonymous>
+        functionName: Test.<anonymous>
+      type: TypeError
+      tapCaught: returnedPromiseRejection
+      source: >2
+      
+          const archivedMock = await Mock.VersionedModel.findById({ _id: mockOne[constants.ID], _version: 2 })
+          childTest.equal(archivedMock[constants.DELETER], "test")
+        ------------------------------^
+      
+          childTest.end()
+      ...
+    
+    1..2
+not ok 8 - delete object moves it to archive # time=55.59ms
+  ---
+  at:
+    fileName: test/versioning.crud.test.js
+    lineNumber: 123
+    columnNumber: 5
+    typeName: Object
+  source: |
+    })
+  
+    tap.test('delete object moves it to archive', async (childTest) => {
+    ----^
+      const mock = await Mock.findById(mockOne[constants.ID])
+      mock._deleter = "test"
+  ...
+
+# Subtest: delete object has default deleter if not provided
+    not ok 1 - Cannot read properties of null (reading '_deleter')
+      ---
+      stack: |
+        Test.<anonymous> (test/versioning.crud.test.js:143:31)
+      at:
+        fileName: test/versioning.crud.test.js
+        lineNumber: 143
+        columnNumber: 31
+        typeName: Test
+        methodName: <anonymous>
+        functionName: Test.<anonymous>
+      type: TypeError
+      tapCaught: returnedPromiseRejection
+      source: >2
+      
+          const archivedMock = await Mock.VersionedModel.findById({ _id: mockTwo[constants.ID], _version: 1 })
+          childTest.equal(archivedMock[constants.DELETER], constants.DEFAULT_DELETER)
+        ------------------------------^
+      
+          childTest.end()
+      ...
+    
+    1..1
+not ok 9 - delete object has default deleter if not provided # time=29.13ms
+  ---
+  at:
+    fileName: test/versioning.crud.test.js
+    lineNumber: 137
+    columnNumber: 5
+    typeName: Object
+  source: >
+    })
+  
+  
+    tap.test('delete object has default deleter if not provided', async
+    (childTest) => {
+  
+    ----^
+      const mock = await new Mock(mockTwo).save()
+  ...
+
+# Subtest: trying to update deleted version fails
+    ok 1 - Got expected error
+    1..1
+ok 10 - trying to update deleted version fails # time=9.033ms
+
+# Subtest: check default index is present in the shadow collection
+    ok 1 - should be equal
+    1..1
+ok 11 - check default index is present in the shadow collection # time=28.163ms
+
+# Subtest: insert many objects
+    ok 1 - should be equal
+    ok 2 - should be equal
+    ok 3 - should be equal
+    1..3
+ok 12 - insert many objects # time=9.868ms
+
+1..12
+[31mMongoDB disconnected[39m
